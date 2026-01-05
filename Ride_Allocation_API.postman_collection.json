@@ -1,0 +1,832 @@
+{
+	"info": {
+		"_postman_id": "ride-allocation-api",
+		"name": "Ride Allocation API",
+		"description": "Complete API collection for Ride Allocation & Time-Based Billing System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Check if the server is running and database is connected"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User APIs",
+			"item": [
+				{
+					"name": "Authentication",
+					"item": [
+						{
+							"name": "User Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.token) {",
+											"        pm.environment.set(\"user_token\", jsonData.data.token);",
+											"        pm.environment.set(\"user_id\", jsonData.data.user.id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"phone_number\": \"+1234567890\",\n  \"name\": \"John Doe\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/users/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "users", "login"]
+								},
+								"description": "User login with phone number and name (optional). Creates new user if phone number doesn't exist. Returns JWT token for authenticated requests."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Rides",
+					"item": [
+						{
+							"name": "Request Ride",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.ride) {",
+											"        pm.environment.set(\"ride_id\", jsonData.data.ride.id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"pickup_address\": \"123 Main Street, Downtown, City 12345\",\n  \"pickup_latitude\": 40.7128,\n  \"pickup_longitude\": -74.0060\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/users/rides/request",
+									"host": ["{{base_url}}"],
+									"path": ["api", "users", "rides", "request"]
+								},
+								"description": "Request a new ride. Admin will be notified and called."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Ride Status",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/users/rides/{{ride_id}}/status",
+									"host": ["{{base_url}}"],
+									"path": ["api", "users", "rides", "{{ride_id}}", "status"]
+								},
+								"description": "Get the current status of a ride"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Ride History",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/users/rides/history?limit=20&offset=0",
+									"host": ["{{base_url}}"],
+									"path": ["api", "users", "rides", "history"],
+									"query": [
+										{
+											"key": "limit",
+											"value": "20"
+										},
+										{
+											"key": "offset",
+											"value": "0"
+										}
+									]
+								},
+								"description": "Get user's ride history with pagination"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Notifications",
+					"item": [
+						{
+							"name": "Get Notifications",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/users/notifications?limit=20&offset=0",
+									"host": ["{{base_url}}"],
+									"path": ["api", "users", "notifications"],
+									"query": [
+										{
+											"key": "limit",
+											"value": "20"
+										},
+										{
+											"key": "offset",
+											"value": "0"
+										}
+									]
+								},
+								"description": "Get user notifications"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Driver APIs",
+			"item": [
+				{
+					"name": "Authentication",
+					"item": [
+						{
+							"name": "Driver Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.token) {",
+											"        pm.environment.set(\"driver_token\", jsonData.data.token);",
+											"        pm.environment.set(\"driver_id\", jsonData.data.driver.id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"phone_number\": \"+1987654321\",\n  \"password\": \"Driver@123\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/drivers/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "drivers", "login"]
+								},
+								"description": "Driver login with phone number and password"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Rides",
+					"item": [
+						{
+							"name": "Get Assigned Rides",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{driver_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/drivers/rides/assigned",
+									"host": ["{{base_url}}"],
+									"path": ["api", "drivers", "rides", "assigned"]
+								},
+								"description": "Get all rides assigned to the driver (status: assigned or in_progress)"
+							},
+							"response": []
+						},
+						{
+							"name": "Start Ride",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.ride) {",
+											"        pm.environment.set(\"active_ride_id\", jsonData.data.ride.id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{driver_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"ride_id\": \"{{ride_id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/drivers/rides/start",
+									"host": ["{{base_url}}"],
+									"path": ["api", "drivers", "rides", "start"]
+								},
+								"description": "Start a ride. This begins the timer for billing calculation."
+							},
+							"response": []
+						},
+						{
+							"name": "End Ride",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{driver_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"ride_id\": \"{{active_ride_id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/drivers/rides/end",
+									"host": ["{{base_url}}"],
+									"path": ["api", "drivers", "rides", "end"]
+								},
+								"description": "End a ride. System calculates duration and billing automatically."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Ride History",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{driver_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/drivers/rides/history?limit=20&offset=0&start_date=2024-01-01&end_date=2024-12-31",
+									"host": ["{{base_url}}"],
+									"path": ["api", "drivers", "rides", "history"],
+									"query": [
+										{
+											"key": "limit",
+											"value": "20",
+											"description": "Number of records per page"
+										},
+										{
+											"key": "offset",
+											"value": "0",
+											"description": "Offset for pagination"
+										},
+										{
+											"key": "start_date",
+											"value": "2024-01-01",
+											"description": "Start date filter (optional)"
+										},
+										{
+											"key": "end_date",
+											"value": "2024-12-31",
+											"description": "End date filter (optional)"
+										}
+									]
+								},
+								"description": "Get driver's ride history with optional date filters"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Statistics",
+					"item": [
+						{
+							"name": "Get Daily Stats",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{driver_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/drivers/stats/daily?date=2024-01-15",
+									"host": ["{{base_url}}"],
+									"path": ["api", "drivers", "stats", "daily"],
+									"query": [
+										{
+											"key": "date",
+											"value": "2024-01-15",
+											"description": "Date in YYYY-MM-DD format (optional, defaults to today)"
+										}
+									]
+								},
+								"description": "Get daily statistics including total rides, earnings, and working hours"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin APIs",
+			"item": [
+				{
+					"name": "Authentication",
+					"item": [
+						{
+							"name": "Admin Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.token) {",
+											"        pm.environment.set(\"admin_token\", jsonData.data.token);",
+											"        pm.environment.set(\"admin_id\", jsonData.data.admin.id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/admin/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "login"]
+								},
+								"description": "Admin login with username and password"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Ride Management",
+					"item": [
+						{
+							"name": "Get Pending Rides",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/admin/rides/pending",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "rides", "pending"]
+								},
+								"description": "Get all pending ride requests that need driver assignment"
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Rides",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/admin/rides/all?status=completed&limit=50&offset=0&start_date=2024-01-01&end_date=2024-12-31",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "rides", "all"],
+									"query": [
+										{
+											"key": "status",
+											"value": "completed",
+											"description": "Filter by status: pending, assigned, in_progress, completed (optional)"
+										},
+										{
+											"key": "limit",
+											"value": "50",
+											"description": "Number of records per page"
+										},
+										{
+											"key": "offset",
+											"value": "0",
+											"description": "Offset for pagination"
+										},
+										{
+											"key": "start_date",
+											"value": "2024-01-01",
+											"description": "Start date filter (optional)"
+										},
+										{
+											"key": "end_date",
+											"value": "2024-12-31",
+											"description": "End date filter (optional)"
+										}
+									]
+								},
+								"description": "Get all rides with optional filters"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Live Rides",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/admin/rides/live",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "rides", "live"]
+								},
+								"description": "Get all active rides (status: assigned or in_progress)"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Ride Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/admin/rides/{{ride_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "rides", "{{ride_id}}"]
+								},
+								"description": "Get detailed information about a specific ride"
+							},
+							"response": []
+						},
+						{
+							"name": "Assign Driver to Ride",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    var jsonData = pm.response.json();",
+											"    if (jsonData.data && jsonData.data.ride) {",
+											"        pm.environment.set(\"assigned_ride_id\", jsonData.data.ride.id);",
+											"    }",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"ride_id\": \"{{ride_id}}\",\n  \"driver_id\": \"{{driver_id}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/admin/rides/assign",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "rides", "assign"]
+								},
+								"description": "Assign an available driver to a pending ride request"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Driver Management",
+					"item": [
+						{
+							"name": "Get Available Drivers",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/admin/drivers/available",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "drivers", "available"]
+								},
+								"description": "Get all available drivers who can be assigned to rides"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Driver Performance",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{admin_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/admin/drivers/performance?driver_id=&start_date=2024-01-01&end_date=2024-12-31",
+									"host": ["{{base_url}}"],
+									"path": ["api", "admin", "drivers", "performance"],
+									"query": [
+										{
+											"key": "driver_id",
+											"value": "",
+											"description": "Filter by specific driver ID (optional)"
+										},
+										{
+											"key": "start_date",
+											"value": "2024-01-01",
+											"description": "Start date filter (optional)"
+										},
+										{
+											"key": "end_date",
+											"value": "2024-12-31",
+											"description": "End date filter (optional)"
+										}
+									]
+								},
+								"description": "Get driver performance statistics including total rides, earnings, and completion rate"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "user_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "driver_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ride_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "driver_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "active_ride_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
