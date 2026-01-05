@@ -287,7 +287,7 @@ const getAllRides = async (req, res) => {
     }
 
     let queryText = `
-      SELECT r.*, u.phone_number as user_phone, d.name as driver_name, d.phone_number as driver_phone
+      SELECT r.*, u.name as user_name,u.phone_number as user_phone, d.name as driver_name, d.phone_number as driver_phone
       FROM rides r
       LEFT JOIN users u ON r.user_id = u.id
       LEFT JOIN drivers d ON r.driver_id = d.id
