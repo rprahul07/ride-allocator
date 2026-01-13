@@ -83,7 +83,7 @@ const login = async (req, res) => {
 const getPendingRides = async (req, res) => {
   try {
     const result = await query(
-      `SELECT r.id, r.pickup_address, r.pickup_latitude, r.status,r.pickup_longitude,
+      `SELECT r.id, r.pickup_address, r.drop_address, r.status,
               r.requested_at, u.phone_number as user_phone
        FROM rides r
        JOIN users u ON r.user_id = u.id

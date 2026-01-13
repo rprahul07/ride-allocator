@@ -93,8 +93,7 @@ const getAssignedRides = async (req, res) => {
     const driverId = req.user.id;
 
     const result = await query(
-      `SELECT id, pickup_address, pickup_latitude, pickup_longitude, 
-              status, requested_at, assigned_at
+      `SELECT id, pickup_address, drop_address, status, requested_at, assigned_at
        FROM rides
        WHERE driver_id = $1
          AND status IN ('assigned', 'in_progress')
@@ -342,7 +341,7 @@ const getRideHistory = async (req, res) => {
     const endDate = req.query.end_date;
 
     let queryText = `
-      SELECT id, pickup_address, status, requested_at, started_at, 
+      SELECT id, pickup_address, drop_address, status, requested_at, started_at, 
              ended_at, duration_minutes, total_fare
       FROM rides
       WHERE driver_id = $1

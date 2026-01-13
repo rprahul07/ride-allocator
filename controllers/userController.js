@@ -92,16 +92,16 @@ const requestRide = async (req, res) => {
   
   try {
     const userId = req.user.id;
-    const { pickup_address, pickup_latitude, pickup_longitude } = req.body;
+    const { pickup_address, drop_address } = req.body;
 
     await client.query('BEGIN');
 
     // Create ride request
     const rideResult = await client.query(
-      `INSERT INTO rides (user_id, pickup_address, pickup_latitude, pickup_longitude, status)
-       VALUES ($1, $2, $3, $4, 'pending')
+      `INSERT INTO rides (user_id, pickup_address, drop_address, status)
+       VALUES ($1, $2, $3, 'pending')
        RETURNING *`,
-      [userId, pickup_address, pickup_latitude || null, pickup_longitude || null]
+      [userId, pickup_address, drop_address || null]
     );
 
     const ride = rideResult.rows[0];
@@ -131,6 +131,7 @@ const requestRide = async (req, res) => {
           id: ride.id,
           status: ride.status,
           pickup_address: ride.pickup_address,
+          drop_address: ride.drop_address,
           requested_at: ride.requested_at,
         },
       },

@@ -25,6 +25,14 @@ const runMigrations = async () => {
     await client.query(seedSQL);
     console.log('✓ Seed data inserted');
     
+    // Read and execute drop_address migration
+    const dropAddressSQL = fs.readFileSync(
+      path.join(__dirname, '002_add_drop_address_remove_coords.sql'),
+      'utf8'
+    );
+    await client.query(dropAddressSQL);
+    console.log('✓ Drop address added and coordinates removed');
+    
     // Read and execute remove Firebase migration
     const removeFirebaseSQL = fs.readFileSync(
       path.join(__dirname, '004_remove_firebase.sql'),

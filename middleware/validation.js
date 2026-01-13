@@ -32,12 +32,10 @@ const validateRideRequest = [
     .trim()
     .notEmpty().withMessage('Pickup address is required')
     .isLength({ min: 5, max: 500 }).withMessage('Address must be between 5 and 500 characters'),
-  body('pickup_latitude')
+  body('drop_address')
     .optional()
-    .isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
-  body('pickup_longitude')
-    .optional()
-    .isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
+    .trim()
+    .isLength({ min: 5, max: 500 }).withMessage('Drop address must be between 5 and 500 characters'),
   handleValidationErrors,
 ];
 
