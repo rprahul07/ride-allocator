@@ -1,0 +1,214 @@
+{
+	"info": {
+		"_postman_id": "new-driver-apis-2024",
+		"name": "New Driver APIs",
+		"description": "Collection for newly created driver stats and profile endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Driver Stats - Daily",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{driver_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/drivers/stats/daily",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"drivers",
+						"stats",
+						"daily"
+					]
+				},
+				"description": "Get daily statistics for the authenticated driver\n\nQuery Parameters:\n- date (optional): Date in YYYY-MM-DD format (defaults to today)"
+			},
+			"response": []
+		},
+		{
+			"name": "Driver Stats - Weekly",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{driver_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/drivers/stats/weekly",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"drivers",
+						"stats",
+						"weekly"
+					]
+				},
+				"description": "Get weekly statistics (Monday-Sunday) for the authenticated driver\n\nQuery Parameters:\n- date (optional): Date in YYYY-MM-DD format (defaults to today)\n\nResponse includes:\n- week_start: Monday date\n- week_end: Sunday date\n- total_rides: Number of rides\n- total_earnings: Total fare amount\n- total_duration: Total ride duration\n- avg_fare: Average fare per ride"
+			},
+			"response": []
+		},
+		{
+			"name": "Driver Stats - Monthly",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{driver_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/drivers/stats/monthly",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"drivers",
+						"stats",
+						"monthly"
+					]
+				},
+				"description": "Get monthly statistics for the authenticated driver\n\nQuery Parameters:\n- date (optional): Date in YYYY-MM-DD format (defaults to today)\n\nResponse includes:\n- month: First day of month\n- total_rides: Number of rides\n- total_earnings: Total fare amount\n- total_duration: Total ride duration\n- avg_fare: Average fare per ride"
+			},
+			"response": []
+		},
+		{
+			"name": "Driver Profile",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{driver_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/drivers/profile",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"drivers",
+						"profile"
+					]
+				},
+				"description": "Get driver profile information with embedded statistics\n\nResponse includes:\n- id: Driver ID\n- name: Driver name\n- phone_number: Phone number\n- license_number: License number\n- vehicle_number: Vehicle number\n- is_active: Account status\n- is_available: Current availability\n- created_at: Account creation date\n- last_login: Last login timestamp\n- stats: Object containing:\n  - total_rides: Total rides completed\n  - completed_rides: Successfully completed rides\n  - total_earnings: Total earnings\n  - avg_fare: Average fare per ride"
+			},
+			"response": []
+		},
+		{
+			"name": "Driver Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"phone_number\": \"9544451720\",\n    \"password\": \"your_password_here\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/drivers/login",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"drivers",
+						"login"
+					]
+				},
+				"description": "Login to get driver JWT token for authenticated requests\n\nRequired body:\n- phone_number: Driver's phone number\n- password: Driver's password\n\nResponse includes JWT token to use in Authorization header"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "driver_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

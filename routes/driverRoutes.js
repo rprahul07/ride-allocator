@@ -44,5 +44,9 @@ router.post(
 router.get('/rides/history', apiLimiter, driverController.getRideHistory);
 
 router.get('/stats/daily', apiLimiter, driverController.getDailyStats);
+router.get('/stats/weekly', apiLimiter, driverController.getWeeklyStats);
+router.get('/stats/monthly', apiLimiter, driverController.getMonthlyStats);
+
+router.get('/profile', apiLimiter, driverController.getDriverProfile);
 
 module.exports = router;

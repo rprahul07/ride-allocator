@@ -208,8 +208,8 @@ const getRideHistory = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        rides: result.rows,
-        total: parseInt(countResult.rows[0].count),
+        rides: result.rows || [],
+        total: parseInt(countResult.rows[0]?.count || 0),
         limit,
         offset,
       },
@@ -242,7 +242,7 @@ const getNotifications = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        notifications: result.rows,
+        notifications: result.rows || [],
       },
     });
   } catch (error) {

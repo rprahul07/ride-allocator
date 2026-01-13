@@ -94,7 +94,7 @@ const getPendingRides = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        rides: result.rows,
+        rides: result.rows || [],
       },
     });
   } catch (error) {
@@ -119,7 +119,7 @@ const getAvailableDrivers = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        drivers: result.rows,
+        drivers: result.rows || [],
       },
     });
   } catch (error) {
@@ -335,8 +335,8 @@ const getAllRides = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        rides: result.rows,
-        total: parseInt(countResult.rows[0].count),
+        rides: result.rows || [],
+        total: parseInt(countResult.rows[0]?.count || 0),
         limit,
         offset,
       },
@@ -365,7 +365,7 @@ const getLiveRides = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        rides: result.rows,
+        rides: result.rows || [],
       },
     });
   } catch (error) {
@@ -422,7 +422,7 @@ const getDriverPerformance = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        drivers: result.rows,
+        drivers: result.rows || [],
       },
     });
   } catch (error) {

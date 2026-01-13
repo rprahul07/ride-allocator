@@ -105,7 +105,7 @@ const getAssignedRides = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        rides: result.rows,
+        rides: result.rows || [],
       },
     });
   } catch (error) {
@@ -367,8 +367,8 @@ const getRideHistory = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        rides: result.rows,
-        total: parseInt(countResult.rows[0].count),
+        rides: result.rows || [],
+        total: parseInt(countResult.rows[0]?.count || 0),
         limit,
         offset,
       },
@@ -415,6 +415,141 @@ const getDailyStats = async (req, res) => {
   }
 };
 
+// Get weekly totals and working hours
+const getWeeklyStats = async (req, res) => {
+  try {
+    const driverId = req.user.id;
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+
+    // Get start of week (Monday) and end of week (Sunday)
+    const startDate = new Date(date);
+    const dayOfWeek = startDate.getDay();
+    const diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    startDate.setDate(diff);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
+
+    const stats = await billingService.getDriverEarnings(
+      driverId,
+      startDate.toISOString(),
+      endDate.toISOString()
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        week_start: startDate.toISOString().split('T')[0],
+        week_end: endDate.toISOString().split('T')[0],
+        ...stats,
+      },
+    });
+  } catch (error) {
+    logger.error('Error getting weekly stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get weekly stats',
+    });
+  }
+};
+
+// Get monthly totals and working hours
+const getMonthlyStats = async (req, res) => {
+  try {
+    const driverId = req.user.id;
+    const date = req.query.date || new Date().toISOString().split('T')[0];
+
+    // Get start and end of month
+    const startDate = new Date(date);
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(startDate);
+    endDate.setMonth(startDate.getMonth() + 1);
+    endDate.setDate(0);
+    endDate.setHours(23, 59, 59, 999);
+
+    const stats = await billingService.getDriverEarnings(
+      driverId,
+      startDate.toISOString(),
+      endDate.toISOString()
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        month: startDate.toISOString().split('T')[0],
+        ...stats,
+      },
+    });
+  } catch (error) {
+    logger.error('Error getting monthly stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get monthly stats',
+    });
+  }
+};
+
+// Get driver profile
+const getDriverProfile = async (req, res) => {
+  try {
+    const driverId = req.user.id;
+
+    const result = await query(
+      `SELECT id, name, phone_number, license_number, vehicle_number, 
+              is_active, is_available, created_at, last_login
+       FROM drivers 
+       WHERE id = $1`,
+      [driverId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Driver not found',
+      });
+    }
+
+    // Get additional stats
+    const statsResult = await query(
+      `SELECT COUNT(*) as total_rides,
+              SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_rides,
+              SUM(total_fare) as total_earnings,
+              AVG(total_fare) as avg_fare
+       FROM rides 
+       WHERE driver_id = $1 AND status = 'completed'`,
+      [driverId]
+    );
+
+    const driver = result.rows[0];
+    const stats = statsResult.rows[0];
+
+    res.status(200).json({
+      success: true,
+      data: {
+        driver: {
+          ...driver,
+          stats: {
+            total_rides: parseInt(stats.total_rides) || 0,
+            completed_rides: parseInt(stats.completed_rides) || 0,
+            total_earnings: parseFloat(stats.total_earnings) || 0,
+            avg_fare: parseFloat(stats.avg_fare) || 0,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    logger.error('Error getting driver profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get driver profile',
+    });
+  }
+};
+
 module.exports = {
   login,
   getAssignedRides,
@@ -422,4 +557,7 @@ module.exports = {
   endRide,
   getRideHistory,
   getDailyStats,
+  getWeeklyStats,
+  getMonthlyStats,
+  getDriverProfile,
 };
