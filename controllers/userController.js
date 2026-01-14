@@ -255,10 +255,133 @@ const getNotifications = async (req, res) => {
   }
 };
 
+// Get user profile
+const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const result = await query(
+      `SELECT id, phone_number, name, is_active, created_at, last_login
+       FROM users 
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Get additional stats
+    const statsResult = await query(
+      `SELECT COUNT(*) as total_rides,
+              SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_rides,
+              SUM(total_fare) as total_spent,
+              AVG(total_fare) as avg_fare
+       FROM rides 
+       WHERE user_id = $1 AND status = 'completed'`,
+      [userId]
+    );
+
+    const user = result.rows[0];
+    const stats = statsResult.rows[0];
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          ...user,
+          stats: {
+            total_rides: parseInt(stats.total_rides) || 0,
+            completed_rides: parseInt(stats.completed_rides) || 0,
+            total_spent: parseFloat(stats.total_spent) || 0,
+            avg_fare: parseFloat(stats.avg_fare) || 0,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    logger.error('Error getting user profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user profile',
+    });
+  }
+};
+
+// Cancel ride request
+const cancelRide = async (req, res) => {
+  const client = await require('../config/database').getClient();
+  
+  try {
+    const userId = req.user.id;
+    const { ride_id } = req.params;
+
+    await client.query('BEGIN');
+
+    // Check if ride exists and belongs to user
+    const rideResult = await client.query(
+      'SELECT id, status FROM rides WHERE id = $1 AND user_id = $2 FOR UPDATE',
+      [ride_id, userId]
+    );
+
+    if (rideResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({
+        success: false,
+        message: 'Ride not found',
+      });
+    }
+
+    const ride = rideResult.rows[0];
+
+    // Only allow cancellation for pending rides
+    if (ride.status !== 'pending') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel ride. Current status: ${ride.status}`,
+      });
+    }
+
+    // Update ride status to cancelled
+    await client.query(
+      'UPDATE rides SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      ['cancelled', ride_id]
+    );
+
+    await client.query('COMMIT');
+
+    res.status(200).json({
+      success: true,
+      message: 'Ride cancelled successfully',
+      data: {
+        ride: {
+          id: ride_id,
+          status: 'cancelled',
+        },
+      },
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    logger.error('Error cancelling ride:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel ride',
+    });
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   login,
   requestRide,
   getRideStatus,
   getRideHistory,
   getNotifications,
+  getUserProfile,
+  cancelRide,
 };

@@ -36,4 +36,8 @@ router.get('/rides/history', apiLimiter, userController.getRideHistory);
 
 router.get('/notifications', apiLimiter, userController.getNotifications);
 
+router.get('/profile', apiLimiter, userController.getUserProfile);
+
+router.delete('/rides/:ride_id', apiLimiter, userController.cancelRide);
+
 module.exports = router;

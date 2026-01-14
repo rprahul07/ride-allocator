@@ -126,7 +126,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"pickup_address\": \"123 Main Street, Downtown, City 12345\",\n  \"pickup_latitude\": 40.7128,\n  \"pickup_longitude\": -74.0060\n}"
+									"raw": "{\n  \"pickup_address\": \"123 Main Street, Downtown, City 12345\",\n  \"drop_address\": \"456 Elm Street, Uptown, City 12345\"\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/users/rides/request",
