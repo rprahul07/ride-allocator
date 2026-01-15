@@ -84,7 +84,7 @@ const getPendingRides = async (req, res) => {
   try {
     const result = await query(
       `SELECT r.id, r.pickup_address, r.drop_address, r.status,
-              r.requested_at, u.phone_number as user_phone
+              r.requested_at, u.phone_number as user_phone, u.name as user_name
        FROM rides r
        JOIN users u ON r.user_id = u.id
        WHERE r.status = 'pending'
